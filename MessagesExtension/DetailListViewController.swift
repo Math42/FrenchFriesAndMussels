@@ -34,7 +34,7 @@ class DetailListViewController: UIViewController {
         mainTitleTextView.text = shoppingList?.name ?? "Indicate a name"
     }
     
-    private func elementAtIndexPath(_ indexPath: NSIndexPath) -> ShoppingListElementModel? {
+    fileprivate func elementAtIndexPath(_ indexPath: NSIndexPath) -> ShoppingListElementModel? {
         return shoppingList?.elements[indexPath.row]
     }
     
@@ -92,7 +92,7 @@ extension DetailListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! DetailListViewCell
-        cell.label?.text = elementAtIndexPath(indexPath)?.name
+        cell.label?.text = elementAtIndexPath(indexPath as NSIndexPath)?.name
         return cell
     }
 }

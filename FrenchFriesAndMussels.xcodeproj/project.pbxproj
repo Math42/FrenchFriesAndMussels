@@ -379,6 +379,7 @@
 				INFOPLIST_FILE = FrenchFriesAndMussels/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = be.agilys.FrenchFriesAndMussels;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos9.3;
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -393,6 +394,7 @@
 				INFOPLIST_FILE = FrenchFriesAndMussels/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = be.agilys.FrenchFriesAndMussels;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos9.3;
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

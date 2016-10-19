@@ -20,6 +20,7 @@ struct ShoppingListModel {
         if withMussels {
             elements.append(ShoppingListElementModel(name: "Mussels"))
             elements.append(ShoppingListElementModel(name: "Fries"))
+            elements.append(ShoppingListElementModel(name: "Blop"))
         }        
     }
     
@@ -47,7 +48,7 @@ extension ShoppingListModel {
         var items = [URLQueryItem]()
         items.append(URLQueryItem(name: ShoppingListModel.queryNameKey, value: name))
         for element in elements {
-            items.append(URLQueryItem(name: ShoppingListElementModel.queryItemKey , value: String(element)))
+            items.append(URLQueryItem(name: ShoppingListElementModel.queryItemKey , value: String(describing: element)))
         }
         return items
     }
@@ -100,91 +101,149 @@ extension ShoppingListElementModel: CustomStringConvertible {
 extension ShoppingListModel {
     
     struct StickerProperties {
-        private static let size = CGSize(width: 300.0, height: 300.0)
-        private static let opaquePadding = CGSize(width: 60.0, height: 10.0)
+        fileprivate static let size = CGSize(width: 380.0, height: 220.0)
+        fileprivate static let lightGray = UIColor(red: 229.0/255.0, green: 230.0/255.0, blue: 233.0/255.0, alpha: 1.0)
     }
     
     func renderSticker(opaque: Bool) -> UIImage? {
         guard let listImage = renderList() else { return nil }
         
-        // Determine the size to draw as a sticker.
-        let outputSize: CGSize
-        let listSize: CGSize
+        let canvasSize = StickerProperties.size
+        let titleHeight = canvasSize.height - listImage.size.height
         
-        if opaque {
-            let scale = min((StickerProperties.size.width - StickerProperties.opaquePadding.width) / listImage.size.height,
-                            (StickerProperties.size.height - StickerProperties.opaquePadding.height) / listImage.size.width)
-            listSize = CGSize(width: listImage.size.width * scale, height: listImage.size.height * scale)
-            outputSize = StickerProperties.size
-        }
-        else {
-            let scale = StickerProperties.size.width / listImage.size.height
-            listSize = CGSize(width: listImage.size.width * scale, height: listImage.size.height * scale)
-            outputSize = listSize
-        }
-        
-        let renderer = UIGraphicsImageRenderer(size: outputSize)
+        let renderer = UIGraphicsImageRenderer(size: canvasSize)
         let image = renderer.image { context in
-            let backgroundColor: UIColor
-            if opaque {
-                backgroundColor = UIColor.white
-            }
-            else {
-                backgroundColor = UIColor.clear
-            }
             
             // Draw the background
-            backgroundColor.setFill()
-            context.fill(CGRect(origin: CGPoint.zero, size: StickerProperties.size))
+            UIColor.white.setFill()
+            context.fill(CGRect(origin: CGPoint.zero, size: canvasSize))
             
-            // Draw the scaled composited image.
-            var drawRect = CGRect.zero
-            drawRect.size = listSize
-            drawRect.origin.x = (outputSize.width / 2.0) - (listSize.width / 2.0)
-            drawRect.origin.y = (outputSize.height / 2.0) - (listSize.height / 2.0)
+            // Draw list name
+            let string = "Liste barbecue samedi"
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.alignment = .right
+            let attrs = [NSFontAttributeName: UIFont(name: "HelveticaNeue-Thin", size: 24)!,
+                         NSForegroundColorAttributeName : UIColor.green,
+                         NSParagraphStyleAttributeName: paragraphStyle]
             
+            let titleTopMargin: CGFloat = 10
+            let titleLeftMargin: CGFloat = 62 // 54 to touch app icon + 8 of margin
+            let titleRightMargin: CGFloat = 53 // 45 to touch close icon + 8 of margin
+            
+            string.draw(with: CGRect(x: titleLeftMargin,
+                                     y: titleTopMargin,
+                                     width: canvasSize.width - titleLeftMargin - titleRightMargin,
+                                     height: titleHeight),
+                        options: .usesLineFragmentOrigin, attributes: attrs, context: nil)
+            
+            // Draw the list.
+            let drawRect = CGRect(x: 0, y: titleHeight, width: listImage.size.width, height: listImage.size.height)
             listImage.draw(in: drawRect)
+            
+            // Add blur on top of everything
+            
         }
+        
+        
+        
+        
         
         return image
     }
 
+    /*
+        Draw an image with 3 elements, separeted by a line.
+        Each "cell" containing 1 line and an element is 50 height
+        Image will be 150
+     */
     private func renderList() -> UIImage? {
-        let fontSize: CGFloat = 30
-        let textColor: UIColor = UIColor.black
-        let boldTextFont: UIFont = UIFont.boldSystemFont(ofSize: fontSize - 2)
-        let textFont: UIFont = UIFont.systemFont(ofSize: fontSize - 4)
-        let titleFontAttributes = [
-            NSFontAttributeName: boldTextFont,
-            NSForegroundColorAttributeName: textColor,
-        ]
-        let textFontAttributes = [
-            NSFontAttributeName: textFont,
-            NSForegroundColorAttributeName: textColor,
-            ]
+        let numberOfCellToDraw: CGFloat = 3
+        let imageSize = CGSize(width: 380, height: 150)
+        let cellHeight = imageSize.height / numberOfCellToDraw
         
-        let imageSize = CGSize(width: 280, height: 280)
+        // Setup font
+        let elementFontSize: CGFloat = 18
+        let elementCheckboxSize: CGFloat = 28
+        let elementNameMargin: CGFloat = 10
+        let elementTopMargin: CGFloat = (cellHeight - elementFontSize) / 2
+        
+        // Creating the image
         let renderer = UIGraphicsImageRenderer(size: imageSize)
         let image = renderer.image { context in
-            let backgroundColor = UIColor.lightGray
-            backgroundColor.setFill()
+            
+            // Background
+            UIColor.white.setFill()
             context.fill(CGRect(origin: CGPoint.zero, size: imageSize))
             
-            var textHeight: CGFloat = fontSize
+            // List Elements
+            var lineRect = CGRect(x: 0, y: 0, width: imageSize.width, height: 1)
+            var elementNameRect = CGRect(x: elementNameMargin,
+                                         y: elementTopMargin,
+                                         width: imageSize.width - elementNameMargin * 2,
+                                         height: cellHeight - lineRect.height)
+            var checkBoxRect = CGRect(x: imageSize.width - elementCheckboxSize - elementNameMargin * 2,
+                                      y: (cellHeight - elementCheckboxSize) / 2,
+                                      width: elementFontSize * 2,
+                                      height: elementFontSize * 2)
             
-            let string = self.name as NSString
-            string.draw(in: CGRect(x: 5, y: textHeight, width: 270, height: fontSize),
-                        withAttributes: titleFontAttributes)
-            textHeight += fontSize
             for element in self.elements {
-                guard textHeight < 280 else {
-                    break
-                }
-                let elementName = element.name as NSString
-                elementName.draw(in: CGRect(x: 5, y: textHeight, width: 270, height: fontSize), withAttributes: textFontAttributes)
-                textHeight += fontSize
+                // Draw a line
+                StickerProperties.lightGray.setFill()
+                context.fill(lineRect)
+                
+                // Draw elementName
+                let paragraphStyle = NSMutableParagraphStyle()
+                let attrs = [NSFontAttributeName: UIFont(name: "HelveticaNeue", size: elementFontSize)!,
+                             NSForegroundColorAttributeName : UIColor.darkGray,
+                             NSParagraphStyleAttributeName: paragraphStyle]
+                
+                element.name.draw(with: elementNameRect, options: .usesLineFragmentOrigin, attributes: attrs, context: nil)
+                
+                // Draw checkbox
+                StickerProperties.lightGray.setFill()
+                context.fill(checkBoxRect)
+                
+                // Prepare for next line
+                lineRect.origin.y += cellHeight
+                elementNameRect.origin.y += cellHeight
+                checkBoxRect.origin.y += cellHeight
+                
+                
+                
+                
+                let context = context.cgContext
+                let colors = [UIColor.white.withAlphaComponent(0).cgColor,
+                              UIColor.white.withAlphaComponent(0.1).cgColor,
+                              UIColor.white.cgColor,
+                              UIColor.white.cgColor] as CFArray
+                
+                let colorSpace = CGColorSpaceCreateDeviceRGB()
+                
+                let colorLocations:[CGFloat] = [0, 0.2, 0.9, 1]
+                
+                let gradient = CGGradient(colorsSpace: colorSpace, colors: colors, locations: colorLocations)
+                
+                let startPoint = CGPoint.zero
+                let endPoint = CGPoint(x:0, y:imageSize.height)
+                context.drawLinearGradient(gradient!, start: startPoint, end: endPoint, options: .drawsAfterEndLocation)
             }
         }
+        
+        /*
+        if let ciImage = image.cgImage as CGImage! {
+            let imageToBlur = CIImage(cgImage:ciImage)
+            let gaussianBlurFilter = CIFilter(name: "CIGaussianBlur")
+            gaussianBlurFilter?.setValue(imageToBlur, forKey: "inputImage")
+            gaussianBlurFilter?.setValue(NSNumber(value: 3), forKey: "inputRadius")
+            if let resultImage = gaussianBlurFilter?.value(forKey: "outputImage") as! CIImage! {
+                return UIImage(ciImage:resultImage, scale: 2, orientation: .up)
+            }
+        }
+        */
+        
+        
+        
+        
         return image
     }
 }

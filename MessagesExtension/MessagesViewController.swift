@@ -83,12 +83,12 @@ class MessagesViewController: MSMessagesAppViewController {
     
     // MARK: Convenience
     
-    private func composeMessage(with shoppingList: ShoppingListModel, caption: String, session: MSSession? = nil) -> MSMessage {
+    fileprivate func composeMessage(with shoppingList: ShoppingListModel, caption: String, session: MSSession? = nil) -> MSMessage {
         var components = URLComponents()
         components.queryItems = shoppingList.queryItems
         
         let layout = MSMessageTemplateLayout()
-        layout.image = shoppingList.renderSticker(opaque: true)
+        layout.image = shoppingList.renderSticker(opaque: false)
         layout.caption = caption
         
         let message = MSMessage(session: session ?? MSSession())
@@ -125,7 +125,7 @@ extension MessagesViewController: DetailListViewControllerDelegate {
         guard let shoppingList = controller.shoppingList else { fatalError("Expected the controller to be displaying a shoppingList") }
         
         // Create a new message with the same session as any currently selected message.
-        let message = composeMessage(with: shoppingList, caption: "List :\(shoppingList.name)", session: conversation.selectedMessage?.session)
+        let message = composeMessage(with: shoppingList, caption: "8 produits restants")
         
         // Add the message to the conversation.
         conversation.insert(message) { error in
